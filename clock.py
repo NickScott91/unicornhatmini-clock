@@ -8,14 +8,16 @@ from random import randrange
 from signal import pause
 
 unicornhatmini = UnicornHATMini()
-unicornhatmini.set_brightness(0.05)
 
-red = 0
-green = 0
-blue = 0
+bright = 0.05
+red = 150
+green = 150
+blue = 50
 dotson = True
 previousMinute = -1
 mode = 'time'
+
+unicornhatmini.set_brightness(bright)
 
 numbers = {
     "0": [[2, 0], [1, 0], [0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [0, 6], [1, 6], [2, 6], [2, 5], [2, 4], [2, 3], [2, 2], [2, 1]],
@@ -34,18 +36,15 @@ numbers = {
 
 button_a = Button(5)
 button_b = Button(6)
-#button_x = Button(16)
-#button_y = Button(24)
+button_x = Button(16)
+button_y = Button(24)
 
-
-def enable_show_time(button):
+def toggle_display(button):
     global mode
-    mode = 'time'
-
-
-def enable_show_date(button):
-    global mode
-    mode = 'date'
+    if mode == 'time':
+        mode = 'date'
+    elif mode == 'date':
+        mode = 'time'
 
 
 def change_color():
@@ -57,9 +56,26 @@ def change_color():
     blue = randrange(256)
 
 
-button_a.when_pressed = enable_show_date
-button_a.when_released = enable_show_time
+def increase_brightness():
+    global bright
+    if bright >= 0.9:
+        pass
+    else:
+        bright += 0.05
+
+
+def decrease_brightness():
+    global bright
+    if bright <= 0.1:
+        pass
+    else:
+        bright -= 0.05
+
+
+button_a.when_pressed = toggle_display
 button_b.when_pressed = change_color
+button_x.when_pressed = increase_brightness
+button_y.when_pressed = decrease_brightness
 
 
 def letter(char, offset):
@@ -67,6 +83,7 @@ def letter(char, offset):
         x = pixel[0] + offset
         y = pixel[1]
         unicornhatmini.set_pixel(x, y, red, green, blue)
+        unicornhatmini.set_brightness(bright)
 
 
 def show_time(now):
@@ -96,8 +113,6 @@ def show_date(now):
 
 while True:
     now = datetime.datetime.now()
-    if now.minute != previousMinute:
-        change_color()
 
     if mode == 'time':
         show_time(now)
